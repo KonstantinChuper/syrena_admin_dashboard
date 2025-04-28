@@ -29,18 +29,20 @@ import {
   PreferredLocationList,
   GroupsToConnect,
   FounderRevenueOptions,
-  FounderEbitdaOptions,
+  ProfitabilityList,
   FounderCloseRound,
-  FundraisingStage,
+  CurrentFundingStage,
   TaxReliefOptions,
   CustomerGroupsList,
-  ProductStageList
+  ProductStageList,
+  ChequesAcceptedList,
+  InvestorGroup
 } from '@/app/profiles/constants/profile-data'
-import { ProfileFormValues, profileSchema } from '@/app/profiles/schemas/profile-schema'
+import { FounderFormValues, founderSchema } from '@/app/profiles/schemas/founder-schema'
 
 interface FounderProfileFormProps {
-  defaultValues?: Partial<ProfileFormValues>
-  onSubmit: (values: ProfileFormValues) => void
+  defaultValues?: FounderFormValues
+  onSubmit: (values: FounderFormValues) => void
   onCancel: () => void
   isEditing?: boolean
 }
@@ -51,56 +53,69 @@ export function FounderProfileForm({
   onCancel,
   isEditing = false
 }: FounderProfileFormProps) {
-  const isCustomType = defaultValues?.type && !FounderTypeList.includes(defaultValues.type)
+  const isCustomType = defaultValues?.jobTitle && !FounderTypeList.includes(defaultValues.jobTitle)
   const [showCustomType, setShowCustomType] = useState(
-    isCustomType || defaultValues?.type === 'Other (please specify)'
+    isCustomType || defaultValues?.jobTitle === 'Other (please specify)'
   )
-  const [customType, setCustomType] = useState(isCustomType ? defaultValues?.type || '' : '')
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
+  const [customType, setCustomType] = useState(isCustomType ? defaultValues?.jobTitle || '' : '')
+  const form = useForm<FounderFormValues>({
+    resolver: zodResolver(founderSchema),
     defaultValues: {
       firstName: defaultValues?.firstName || '',
       lastName: defaultValues?.lastName || '',
-      type: isCustomType ? 'Other (please specify)' : defaultValues?.type || '',
       industry: defaultValues?.industry || [],
-      fundingStage: defaultValues?.fundingStage || '',
-      groups: defaultValues?.groups || [],
       preferredLocation: defaultValues?.preferredLocation || [],
-      jobTitle: defaultValues?.jobTitle || '',
+      groups: defaultValues?.groups || [],
       mobileNumber: defaultValues?.mobileNumber || '',
       linkedinUrl: defaultValues?.linkedinUrl || '',
-      fundingDeployed: defaultValues?.fundingDeployed || '',
-      bio: defaultValues?.bio || '',
+      jobTitle: isCustomType ? 'Other (please specify)' : defaultValues?.jobTitle || '',
+      companyName: defaultValues?.companyName || '',
+      websiteUrl: defaultValues?.websiteUrl || '',
+      fundingRaised: defaultValues?.fundingRaised || '',
+      fundingRequired: defaultValues?.fundingRequired || '',
+      fundingStage: defaultValues?.fundingStage || '',
+      chequesAccepted: defaultValues?.chequesAccepted || [],
+      currentFundingStage: defaultValues?.currentFundingStage || '',
       revenue: defaultValues?.revenue || '',
-      ebitda: defaultValues?.ebitda || '',
-      closingTimeframe: defaultValues?.closingTimeframe || '',
-      fundraisingStage: defaultValues?.fundraisingStage || '',
-      taxRelief: defaultValues?.taxRelief || [],
-      customerGroups: defaultValues?.customerGroups || [],
-      productStage: defaultValues?.productStage || ''
+      yoyg: defaultValues?.yoyg || '',
+      profitability: defaultValues?.profitability || '',
+      bio: defaultValues?.bio || '',
+      imageUrl: defaultValues?.imageUrl || 'IMAGE-HERE',
+      pitchDeckUrl: defaultValues?.pitchDeckUrl || 'PITCH-DECK-HERE',
+      closeDate: defaultValues?.closeDate || '',
+      customerGroups: defaultValues?.customerGroups || []
+      // taxRelief: defaultValues?.taxRelief || [],
+      // productStage: defaultValues?.productStage || ''
     }
   })
 
   const industryOptions = IndustriesList.map((item) => ({ label: item, value: item }))
-  const groupsOptions = GroupsToConnect.map((item) => ({ label: item, value: item }))
+  const customerGroupsOptions = CustomerGroupsList.map((item) => ({ label: item, value: item }))
   const locationOptions = PreferredLocationList.map((item) => ({ label: item, value: item }))
-  const taxReliefOptions = TaxReliefOptions.map((item) => ({ label: item, value: item }))
+  // const taxReliefOptions = TaxReliefOptions.map((item) => ({ label: item, value: item }))
+  const chequesAcceptedOptions = ChequesAcceptedList.map((item) => ({ label: item, value: item }))
+  const InvestorGroupOptions = InvestorGroup.map((item) => ({ label: item, value: item }))
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === 'type') {
-        setShowCustomType(value.type === 'Other (please specify)')
+      if (name === 'jobTitle') {
+        setShowCustomType(value.jobTitle === 'Other (please specify)')
       }
     })
     return () => subscription.unsubscribe()
   }, [form.watch])
 
-  const handleSubmit = (values: ProfileFormValues) => {
-    if (values.type === 'Other (please specify)' && customType) {
-      values.type = customType
+  const handleSubmit = (values: FounderFormValues) => {
+    console.log('FounderForm handleSubmit called with data:', values)
+    console.log('Form validation state:', form.formState)
+    if (values.jobTitle === 'Other (please specify)' && customType) {
+      values.jobTitle = customType
     }
     onSubmit(values)
   }
+
+  const { errors } = form.formState
+  console.log('Form errors:', errors)
 
   return (
     <Form {...form}>
@@ -109,6 +124,34 @@ export function FounderProfileForm({
         className="space-y-6 overflow-y-auto scrollbar-hide"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="imageUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Image URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="IMAGE URL" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="pitchDeckUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Pitchdeck</FormLabel>
+                <FormControl>
+                  <Input placeholder="PITCHDECK" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="firstName"
@@ -139,10 +182,66 @@ export function FounderProfileForm({
 
           <FormField
             control={form.control}
-            name="type"
+            name="companyName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Type</FormLabel>
+                <FormLabel>Company Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter company name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="websiteUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Website URL</FormLabel>
+                <FormControl>
+                  <Input placeholder="https://yourcompany.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="fundingRaised"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Funding Raised</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter amount raised" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="fundingRequired"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Funding Required</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter amount required" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="jobTitle"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Job Title</FormLabel>
                 <Select
                   onValueChange={(value) => {
                     field.onChange(value)
@@ -237,21 +336,27 @@ export function FounderProfileForm({
           <FormField
             control={form.control}
             name="groups"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Groups</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    options={groupsOptions as { label: string; value: string }[]}
-                    placeholder="Select groups"
-                    defaultValue={field.value}
-                    onValueChange={(selected: string[]) => field.onChange(selected)}
-                    variant="default"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              console.log('Field value for groups:', field.value)
+              return (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Groups to connect</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={InvestorGroupOptions}
+                      placeholder="Select groups to connect"
+                      defaultValue={field.value}
+                      onValueChange={(selected: string[]) => {
+                        console.log('Selected groups:', selected)
+                        field.onChange(selected)
+                      }}
+                      variant="default"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )
+            }}
           />
 
           <FormField
@@ -306,10 +411,10 @@ export function FounderProfileForm({
 
           <FormField
             control={form.control}
-            name="ebitda"
+            name="profitability"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>EBITDA Status</FormLabel>
+                <FormLabel>Profitability Status</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
@@ -317,11 +422,11 @@ export function FounderProfileForm({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select EBITDA status" />
+                      <SelectValue placeholder="Select profitability status" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {FounderEbitdaOptions.map((option) => (
+                    {ProfitabilityList.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -335,10 +440,10 @@ export function FounderProfileForm({
 
           <FormField
             control={form.control}
-            name="closingTimeframe"
+            name="closeDate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Closing Timeframe</FormLabel>
+                <FormLabel>Closing Date</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
@@ -362,12 +467,32 @@ export function FounderProfileForm({
             )}
           />
 
+          {/* <FormField
+            control={form.control}
+            name="currentFundingStage"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Current Funding Stage</FormLabel>
+                <FormControl>
+                  <MultiSelect
+                    options={CurrentFundingStage.map((item) => ({ label: item, value: item }))}
+                    placeholder="Select funding stages"
+                    defaultValue={Array.isArray(field.value) ? field.value : []}
+                    onValueChange={(selected: string[]) => field.onChange(selected)}
+                    variant="default"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          /> */}
+
           <FormField
             control={form.control}
-            name="fundraisingStage"
+            name="currentFundingStage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Fundraising Stage</FormLabel>
+                <FormLabel>Current Funding Stage</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
@@ -375,11 +500,11 @@ export function FounderProfileForm({
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select fundraising stage" />
+                      <SelectValue placeholder="Select current funding stage" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {FundraisingStage.map((option) => (
+                    {CurrentFundingStage.map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>
@@ -391,7 +516,7 @@ export function FounderProfileForm({
             )}
           />
 
-          <FormField
+          {/* <FormField
             control={form.control}
             name="taxRelief"
             render={({ field }) => (
@@ -409,29 +534,37 @@ export function FounderProfileForm({
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
 
           <FormField
             control={form.control}
             name="customerGroups"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Customer Groups</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    options={CustomerGroupsList.map((item) => ({ label: item, value: item }))}
-                    placeholder="Select customer groups"
-                    defaultValue={field.value}
-                    onValueChange={(selected: string[]) => field.onChange(selected)}
-                    variant="default"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              console.log('Field value for customerGroups:', field.value)
+              console.log('customerGroupsOptions:', customerGroupsOptions)
+
+              return (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Customer Groups</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={customerGroupsOptions}
+                      placeholder="Select customer groups"
+                      defaultValue={field.value}
+                      onValueChange={(selected: string[]) => {
+                        console.log('Selected customer groups:', selected)
+                        field.onChange(selected)
+                      }}
+                      variant="default"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )
+            }}
           />
 
-          <FormField
+          {/* <FormField
             control={form.control}
             name="productStage"
             render={({ field }) => (
@@ -449,6 +582,55 @@ export function FounderProfileForm({
                   </FormControl>
                   <SelectContent>
                     {ProductStageList.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          /> */}
+
+          <FormField
+            control={form.control}
+            name="chequesAccepted"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Cheques Accepted</FormLabel>
+                <FormControl>
+                  <MultiSelect
+                    options={chequesAcceptedOptions}
+                    placeholder="Select acceptable cheque sizes"
+                    defaultValue={field.value}
+                    onValueChange={(selected: string[]) => field.onChange(selected)}
+                    variant="default"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="yoyg"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Year-over-Year Growth</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select YoY Growth" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {['0%', '1-25%', '26-50%', '51-75%', '76-99%', '100%+'].map((option) => (
                       <SelectItem key={option} value={option}>
                         {option}
                       </SelectItem>

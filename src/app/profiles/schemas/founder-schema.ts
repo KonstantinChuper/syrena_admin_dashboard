@@ -11,7 +11,7 @@ export const founderSchema = z.object({
     .string()
     .min(2, 'Linkedin URL is required')
     .regex(/^https:\/\/[a-z]{2,3}\.linkedin\.com\/.*$/, 'Please enter a valid LinkedIn URL'),
-  jobRole: z.string().min(1, 'Please select a job role'),
+  jobTitle: z.string().min(1, 'Please select a job role'),
   companyName: z.string().min(1, 'Please enter a company name'),
   websiteUrl: z.string().optional(),
   fundingRaised: z.string().optional(),
@@ -33,7 +33,13 @@ export const founderSchema = z.object({
     })
     .optional(),
   imageUrl: z.string().optional(),
-  pitchDeckUrl: z.string().optional()
+  pitchDeckUrl: z.string().optional(),
+  // added
+  // ebitda: z.string().optional(),
+  customerGroups: z.array(z.string()).optional(),
+  // taxRelief: z.array(z.string()).optional(),
+  // productStage: z.string().optional(),
+  // customerGroups: z.array(z.string()).optional(),
 })
 
 export type FounderFormValues = z.infer<typeof founderSchema>

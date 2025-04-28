@@ -17,10 +17,16 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ProfileCard } from '@/app/profiles/components/ProfileCards/InvestorProfileCard'
 import { InvestorProfileForm } from '@/app/profiles/components/ProfileForms/InvestorProfileForm'
+import { FounderProfileForm } from './components/ProfileForms/FounderProfileForm'
 import { FounderProfileCard } from '@/app/profiles/components/ProfileCards/FounderProfileCard'
 import { v4 as uuidv4 } from 'uuid'
-import { Profile, ProfileFormValues } from '@/app/profiles/schemas/profile-schema'
-import { FounderProfileForm } from './components/ProfileForms/FounderProfileForm'
+import { FounderProfile, FounderFormValues } from '@/app/profiles/schemas/founder-schema'
+import { InvestorProfile, InvestorFormValues } from '@/app/profiles/schemas/investor-schema'
+
+import { formatForInvestorForm, formatForFounderForm, processFormSubmission } from './utils/utils'
+
+type Profile = FounderProfile | InvestorProfile
+type ProfileFormValues = FounderFormValues | InvestorFormValues
 
 export default function ProfilesPage() {
   const [formDialogOpen, setFormDialogOpen] = useState(false)
@@ -28,15 +34,16 @@ export default function ProfilesPage() {
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null)
   const [currentProfileType, setCurrentProfileType] = useState<string>('')
   const [isEditing, setIsEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState('investors')
 
-  const [investorProfiles, setInvestorProfiles] = useState<Profile[]>([
+  const [investorProfiles, setInvestorProfiles] = useState<InvestorProfile[]>([
     {
       id: '1',
       firstName: 'Jane',
       lastName: 'Smith',
       type: 'Angel Investor',
       industry: ['AI & Machine Learning', 'Fintech & Insurtech'],
-      fundingStage: 'Seed',
+      fundingStage: ['Seed', 'Pre-Seed'],
       groups: ['Female Founders', 'First-Time Founders'],
       preferredLocation: ['UK', 'Europe'],
       jobTitle: 'Partner',
@@ -51,7 +58,7 @@ export default function ProfilesPage() {
       lastName: 'Johnson',
       type: 'VC (Venture Capital Fund)',
       industry: ['Enterprise SaaS', 'Cybersecurity'],
-      fundingStage: 'Series A',
+      fundingStage: ['Series A'],
       groups: ['Impact-Driven Ventures'],
       preferredLocation: ['USA', 'Europe'],
       jobTitle: 'Managing Director',
@@ -62,12 +69,11 @@ export default function ProfilesPage() {
     }
   ])
 
-  const [founderProfiles, setFounderProfiles] = useState<Profile[]>([
+  const [founderProfiles, setFounderProfiles] = useState<FounderProfile[]>([
     {
       id: '3',
       firstName: 'Sarah',
       lastName: 'Williams',
-      type: 'Founder & CEO',
       industry: ['HealthTech & MedTech', 'AI & Machine Learning'],
       fundingStage: 'Seed',
       groups: ['Female Founders', 'First-Time Founders'],
@@ -75,103 +81,46 @@ export default function ProfilesPage() {
       jobTitle: 'CEO',
       mobileNumber: '+44 7111 222333',
       linkedinUrl: 'https://uk.linkedin.com/in/sarahwilliams',
-      fundingDeployed: '',
+      fundingRequired: 'fdfdffd',
       bio: 'Founder of a health tech startup focused on preventative care using AI.',
-      revenue: '£200k–500k', 
-      ebitda: 'Breakeven', 
-      closingTimeframe: '3-6 months', 
-      fundraisingStage: 'In the middle', 
-      taxRelief: ['SEIS (Seed Enterprise Investment Scheme)', 'EIS (Enterprise Investment Scheme)'], 
-      customerGroups: ['B2B', 'B2C'], 
-      productStage: 'MVP' 
+      revenue: '£20k – £50k',
+      closeDate: '3-6 months',
+      // taxRelief: ['SEIS (Seed Enterprise Investment Scheme)', 'EIS (Enterprise Investment Scheme)'],
+      customerGroups: ['B2B', 'B2C'],
+      // productStage: 'MVP',
+      companyName: 'HealthAI Ltd',
+      chequesAccepted: ['£50k-£100k', '£100k-£200k'],
+      currentFundingStage: 'Just started (spoke to leess than 5 funds)',
+      yoyg: '100%+',
+      profitability: 'Not yet profitable',
+      websiteUrl: 'https://healthai.co.uk'
     },
     {
       id: '4',
       firstName: 'David',
       lastName: 'Chen',
-      type: 'Co-Founder & CTO',
       industry: ['Fintech & Insurtech', 'Enterprise SaaS'],
       fundingStage: 'Series A',
-      groups: ['First-Time Founders'], 
+      groups: ['Female Founders', 'First-Time Founders'],
       preferredLocation: ['USA', 'Asia'],
       jobTitle: 'Co-Founder & CTO',
       mobileNumber: '+44 7444 555666',
       linkedinUrl: 'https://uk.linkedin.com/in/davidchen',
-      fundingDeployed: '',
+      fundingRequired: 'fdfdffd',
       bio: 'Technical co-founder with 10+ years of experience building scalable fintech solutions.',
-      revenue: '£500k+', 
-      ebitda: 'Profitable', 
-      closingTimeframe: '1-3 months', 
-      fundraisingStage: 'Almost finished (have terms sheets)',
-      taxRelief: ['EIS (Enterprise Investment Scheme)'], 
-      customerGroups: ['Enterprise'],
-      productStage: 'Scaling'
-    }
-  ])
-
-  const [advisorProfiles, setAdvisorProfiles] = useState<Profile[]>([
-    {
-      id: '5',
-      firstName: 'Robert',
-      lastName: 'Thompson',
-      type: 'Advisor',
-      industry: ['E-Commerce & Retail', 'Consumer Products & DTC'],
-      fundingStage: 'Series B',
-      groups: [],
-      preferredLocation: ['UK', 'Europe'],
-      jobTitle: 'Board Member',
-      mobileNumber: '+44 7777 888999',
-      linkedinUrl: 'https://uk.linkedin.com/in/robertthompson',
-      fundingDeployed: '',
-      bio: 'E-commerce growth advisor with experience scaling multiple 8-figure businesses.'
-    },
-    {
-      id: '6',
-      firstName: 'Lisa',
-      lastName: 'Garcia',
-      type: 'Advisor',
-      industry: ['Media, Entertainment & Gaming'],
-      fundingStage: 'Seed',
-      groups: [],
-      preferredLocation: ['USA'],
-      jobTitle: 'Marketing Advisor',
-      mobileNumber: '+44 7000 111222',
-      linkedinUrl: 'https://uk.linkedin.com/in/lisagarcia',
-      fundingDeployed: '',
-      bio: 'Former CMO at major gaming companies, now advising early-stage startups.'
-    }
-  ])
-
-  const [serviceProviderProfiles, setServiceProviderProfiles] = useState<Profile[]>([
-    {
-      id: '7',
-      firstName: 'Thomas',
-      lastName: 'Wilson',
-      type: 'Service Provider',
-      industry: ['Legal & Compliance'],
-      fundingStage: 'Pre-Seed',
-      groups: [],
-      preferredLocation: ['UK'],
-      jobTitle: 'Attorney',
-      mobileNumber: '+44 7333 444555',
-      linkedinUrl: 'https://uk.linkedin.com/in/thomaswilson',
-      fundingDeployed: '',
-      bio: 'Startup lawyer specializing in fundraising and M&A transactions.'
-    },
-    {
-      id: '8',
-      firstName: 'Emily',
-      lastName: 'Patel',
-      type: 'Service Provider',
-      industry: ['Finance & Accounting'],
-      fundingStage: 'Seed',
-      groups: [],
-      preferredLocation: ['UK', 'Europe'],
-      jobTitle: 'CFO Services',
-      mobileNumber: '+44 7666 777888',
-      linkedinUrl: 'https://uk.linkedin.com/in/emilypatel',
-      fundingDeployed: '',
-      bio: 'Fractional CFO helping startups with financial strategy and fundraising.'
+      revenue: '£500k+',
+      closeDate: '1-3 months',
+      // fundraisingStage: 'Almost finished (have terms sheets)',
+      // taxRelief: ['EIS (Enterprise Investment Scheme)'],
+      customerGroups: ['B2B', 'B2C'],
+      // productStage: 'Scaling',
+      // Добавленные отсутствующие поля
+      companyName: 'FinScaler Technologies',
+      chequesAccepted: ['£20k – £50k'],
+      currentFundingStage: 'Just started (spoke to leess than 5 funds)',
+      yoyg: '75%',
+      profitability: 'Profitable',
+      websiteUrl: 'https://finscaler.com'
     }
   ])
 
@@ -180,22 +129,28 @@ export default function ProfilesPage() {
     setCurrentProfile(null)
     setCurrentProfileType(profileType)
 
-    let defaultValues: Partial<ProfileFormValues> = {}
+    let defaultValues: Partial<Profile> = {
+      id: 'temp_' + uuidv4()
+    }
 
     if (profileType === 'founder') {
       defaultValues = {
+        ...defaultValues,
         type: 'Founder & CEO'
       }
     } else if (profileType === 'investor') {
       defaultValues = {
+        ...defaultValues,
         type: 'Angel Investor'
       }
     } else if (profileType === 'advisor') {
       defaultValues = {
+        ...defaultValues,
         type: 'Advisor'
       }
     } else {
       defaultValues = {
+        ...defaultValues,
         type: 'Service Provider'
       }
     }
@@ -204,82 +159,67 @@ export default function ProfilesPage() {
     setFormDialogOpen(true)
   }
 
-const handleEditProfile = (profile: Profile) => {
-  setIsEditing(true)
-  setCurrentProfile(profile)
+  const handleEditProfile = (profile: Profile) => {
+    setIsEditing(true)
+    setCurrentProfile(profile)
 
-  if ('revenue' in profile || 'ebitda' in profile || profile.type.includes('Founder')) {
-    setCurrentProfileType('founder')
-  } else if (
-    profile.type.includes('Investor') ||
-    profile.type.includes('VC') ||
-    profile.type.includes('Angel')
-  ) {
-    setCurrentProfileType('investor')
-  } else if (profile.type.includes('Advisor')) {
-    setCurrentProfileType('advisor')
-  } else {
-    setCurrentProfileType('service-provider')
+    if ('revenue' in profile || 'ebitda' in profile || profile.type.includes('Founder')) {
+      setCurrentProfileType('founder')
+    } else if (
+      profile.type.includes('Investor') ||
+      profile.type.includes('VC') ||
+      profile.type.includes('Angel')
+    ) {
+      setCurrentProfileType('investor')
+    } else if (profile.type.includes('Advisor')) {
+      setCurrentProfileType('advisor')
+    } else {
+      setCurrentProfileType('service-provider')
+    }
+
+    setFormDialogOpen(true)
   }
-
-  setFormDialogOpen(true)
-}
 
   const handleDeleteConfirm = (profileId: string) => {
     setCurrentProfile(
-      [
-        ...investorProfiles,
-        ...founderProfiles,
-        ...advisorProfiles,
-        ...serviceProviderProfiles
-      ].find((p) => p.id === profileId) || null
+      [...investorProfiles, ...founderProfiles].find((p) => p.id === profileId) || null
     )
     setDeleteDialogOpen(true)
   }
 
   const handleProfileSubmit = (values: ProfileFormValues) => {
+    console.log('Submitting values:', values)
     if (isEditing && currentProfile) {
       const updatedProfile = { ...currentProfile, ...values }
 
       if (investorProfiles.some((p) => p.id === currentProfile.id)) {
         setInvestorProfiles(
-          investorProfiles.map((p) => (p.id === currentProfile.id ? updatedProfile : p))
+          investorProfiles.map((p) =>
+            p.id === currentProfile.id ? (updatedProfile as InvestorProfile) : p
+          )
         )
       } else if (founderProfiles.some((p) => p.id === currentProfile.id)) {
         setFounderProfiles(
-          founderProfiles.map((p) => (p.id === currentProfile.id ? updatedProfile : p))
-        )
-      } else if (advisorProfiles.some((p) => p.id === currentProfile.id)) {
-        setAdvisorProfiles(
-          advisorProfiles.map((p) => (p.id === currentProfile.id ? updatedProfile : p))
-        )
-      } else if (serviceProviderProfiles.some((p) => p.id === currentProfile.id)) {
-        setServiceProviderProfiles(
-          serviceProviderProfiles.map((p) => (p.id === currentProfile.id ? updatedProfile : p))
+          founderProfiles.map((p) =>
+            p.id === currentProfile.id ? (updatedProfile as FounderProfile) : p
+          )
         )
       }
     } else {
-      const newProfile: Profile = {
-        ...values,
-        id: uuidv4()
-      }
-
-      switch (currentProfileType) {
-        case 'investor':
-          setInvestorProfiles([...investorProfiles, newProfile])
-          break
-        case 'founder':
-          setFounderProfiles([...founderProfiles, newProfile])
-          break
-        case 'advisor':
-          setAdvisorProfiles([...advisorProfiles, newProfile])
-          break
-        case 'service-provider':
-          setServiceProviderProfiles([...serviceProviderProfiles, newProfile])
-          break
+      if (currentProfileType === 'investor') {
+        const newInvestorProfile: InvestorProfile = {
+          ...(values as InvestorFormValues),
+          id: uuidv4()
+        }
+        setInvestorProfiles([...investorProfiles, newInvestorProfile])
+      } else if (currentProfileType === 'founder') {
+        const newFounderProfile: FounderProfile = {
+          ...(values as FounderFormValues),
+          id: uuidv4()
+        }
+        setFounderProfiles([...founderProfiles, newFounderProfile])
       }
     }
-
     setFormDialogOpen(false)
   }
 
@@ -289,31 +229,40 @@ const handleEditProfile = (profile: Profile) => {
         setInvestorProfiles(investorProfiles.filter((p) => p.id !== currentProfile.id))
       } else if (founderProfiles.some((p) => p.id === currentProfile.id)) {
         setFounderProfiles(founderProfiles.filter((p) => p.id !== currentProfile.id))
-      } else if (advisorProfiles.some((p) => p.id === currentProfile.id)) {
-        setAdvisorProfiles(advisorProfiles.filter((p) => p.id !== currentProfile.id))
-      } else if (serviceProviderProfiles.some((p) => p.id === currentProfile.id)) {
-        setServiceProviderProfiles(
-          serviceProviderProfiles.filter((p) => p.id !== currentProfile.id)
-        )
       }
-
       setDeleteDialogOpen(false)
     }
   }
 
-  console.log('Rendering FounderProfileForm with:', {
-    isEditing: isEditing,
-    currentProfile: currentProfile,
-    currentProfileType: currentProfileType
-  })
+  const getProfileTypeFromTab = (tab: string): string => {
+    switch (tab) {
+      case 'investors':
+        return 'investor'
+      case 'founders':
+        return 'founder'
+      case 'advisors':
+        return 'advisor'
+      case 'service-providers':
+        return 'service-provider'
+      default:
+        return 'investor'
+    }
+  }
 
   return (
     <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Profile Management</h1>
+        <Button
+          onClick={() => handleAddEditProfile(getProfileTypeFromTab(activeTab))}
+          className="flex items-center mt-6 bg-[#FF5F00]"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Profile
+        </Button>
       </div>
 
-      <Tabs defaultValue="investors">
+      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-4 mb-8 w-full">
           <TabsTrigger value="investors">Investors</TabsTrigger>
           <TabsTrigger value="founders">Founders</TabsTrigger>
@@ -326,7 +275,7 @@ const handleEditProfile = (profile: Profile) => {
             {investorProfiles.map((profile) => (
               <ProfileCard
                 key={profile.id}
-                profile={profile}
+                profile={profile as InvestorProfile}
                 onEdit={handleEditProfile}
                 onDelete={handleDeleteConfirm}
               />
@@ -337,14 +286,6 @@ const handleEditProfile = (profile: Profile) => {
               </div>
             )}
           </div>
-
-          <Button
-            onClick={() => handleAddEditProfile('investor')}
-            className="flex items-center mt-6 bg-[#FF5F00]"
-          >
-            Add New Profile
-            <Plus className="mr-2 h-4 w-4" />
-          </Button>
         </TabsContent>
 
         <TabsContent value="founders" className="mt-0">
@@ -352,7 +293,7 @@ const handleEditProfile = (profile: Profile) => {
             {founderProfiles.map((profile) => (
               <FounderProfileCard
                 key={profile.id}
-                profile={profile}
+                profile={profile as FounderProfile}
                 onEdit={handleEditProfile}
                 onDelete={handleDeleteConfirm}
               />
@@ -363,63 +304,22 @@ const handleEditProfile = (profile: Profile) => {
               </div>
             )}
           </div>
-          <Button
-            onClick={() => handleAddEditProfile('founder')}
-            className="flex items-center mt-6 bg-[#FF5F00]"
-          >
-            Add New Profile
-            <Plus className="mr-2 h-4 w-4" />
-          </Button>
         </TabsContent>
 
         <TabsContent value="advisors" className="mt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {advisorProfiles.map((profile) => (
-              <ProfileCard
-                key={profile.id}
-                profile={profile}
-                onEdit={handleEditProfile}
-                onDelete={handleDeleteConfirm}
-              />
-            ))}
-            {advisorProfiles.length === 0 && (
-              <div className="col-span-3 py-12 text-center">
-                <p className="text-muted-foreground">No advisor profiles found.</p>
-              </div>
-            )}
+            <div className="col-span-3 py-12 text-center">
+              <p className="text-muted-foreground">No advisor profiles found.</p>
+            </div>
           </div>
-          <Button
-            onClick={() => handleAddEditProfile('advisor')}
-            className="flex items-center mt-6 bg-[#FF5F00]"
-          >
-            Add New Profile
-            <Plus className="mr-2 h-4 w-4" />
-          </Button>
         </TabsContent>
 
         <TabsContent value="service-providers" className="mt-0">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {serviceProviderProfiles.map((profile) => (
-              <ProfileCard
-                key={profile.id}
-                profile={profile}
-                onEdit={handleEditProfile}
-                onDelete={handleDeleteConfirm}
-              />
-            ))}
-            {serviceProviderProfiles.length === 0 && (
-              <div className="col-span-3 py-12 text-center">
-                <p className="text-muted-foreground">No service provider profiles found.</p>
-              </div>
-            )}
+            <div className="col-span-3 py-12 text-center">
+              <p className="text-muted-foreground">No service provider profiles found.</p>
+            </div>
           </div>
-          <Button
-            onClick={() => handleAddEditProfile('service-provider')}
-            className="flex items-center mt-6 bg-[#FF5F00]"
-          >
-            Add New Profile
-            <Plus className="mr-2 h-4 w-4" />
-          </Button>
         </TabsContent>
       </Tabs>
 
@@ -430,10 +330,14 @@ const handleEditProfile = (profile: Profile) => {
               {isEditing ? 'Edit Profile' : 'Add New Profile'}
             </DialogTitle>
           </DialogHeader>
+
           {currentProfileType === 'investor' && (
             <InvestorProfileForm
-              defaultValues={currentProfile || undefined}
-              onSubmit={handleProfileSubmit}
+              defaultValues={formatForInvestorForm(currentProfile as any)}
+              onSubmit={(values) => {
+                const processedValues = processFormSubmission(values, 'investor')
+                handleProfileSubmit(processedValues)
+              }}
               onCancel={() => setFormDialogOpen(false)}
               isEditing={isEditing}
             />
@@ -441,8 +345,13 @@ const handleEditProfile = (profile: Profile) => {
 
           {currentProfileType === 'founder' && (
             <FounderProfileForm
-              defaultValues={currentProfile || undefined}
-              onSubmit={handleProfileSubmit}
+              defaultValues={
+                formatForFounderForm(currentProfile as any) as Required<FounderFormValues>
+              }
+              onSubmit={(values) => {
+                const processedValues = processFormSubmission(values, 'founder')
+                handleProfileSubmit(processedValues)
+              }}
               onCancel={() => setFormDialogOpen(false)}
               isEditing={isEditing}
             />

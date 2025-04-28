@@ -11,11 +11,11 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Trash, Pencil } from 'lucide-react'
-import { Profile } from '@/app/profiles/schemas/profile-schema'
+import { FounderProfile } from '@/app/profiles/schemas/founder-schema'
 
 interface ProfileCardProps {
-  profile: Profile
-  onEdit: (profile: Profile) => void
+  profile: FounderProfile
+  onEdit: (profile: FounderProfile) => void
   onDelete: (profileId: string) => void
 }
 
@@ -41,7 +41,7 @@ export function FounderProfileCard({ profile, onEdit, onDelete }: ProfileCardPro
             </Button>
           </div>
         </div>
-        <CardDescription>{profile.type}</CardDescription>
+        <CardDescription>{profile.fundingStage}</CardDescription>
         {profile.fundingStage && (
           <Badge variant="outline" className="mt-1">
             {profile.fundingStage}
@@ -67,35 +67,31 @@ export function FounderProfileCard({ profile, onEdit, onDelete }: ProfileCardPro
           </div>
         )}
 
-        {profile.ebitda && (
+        {profile.profitability && (
           <div>
             <p className="text-sm font-medium mb-1">EBITDA Status</p>
-            <p className="text-sm">{profile.ebitda}</p>
+            <p className="text-sm">{profile.profitability}</p>
           </div>
         )}
 
-        {profile.closingTimeframe && (
-          <div>
-            <p className="text-sm font-medium mb-1">Closing Timeframe</p>
-            <p className="text-sm">{profile.closingTimeframe}</p>
-          </div>
-        )}
+        <div>
+          <p className="text-sm font-medium mb-1">Closing Timeframe</p>
+          <p className="text-sm">{profile.closeDate}</p>
+        </div>
 
-        {profile.fundraisingStage && (
+        {profile.fundingRaised && (
           <div>
             <p className="text-sm font-medium mb-1">Fundraising Stage</p>
-            <p className="text-sm">{profile.fundraisingStage}</p>
+            <p className="text-sm">{profile.fundingRaised}</p>
           </div>
         )}
 
-        {profile.fundingDeployed && (
-          <div>
-            <p className="text-sm font-medium mb-1">Funding Deployed</p>
-            <p className="text-sm">{profile.fundingDeployed}</p>
-          </div>
-        )}
+        <div>
+          <p className="text-sm font-medium mb-1">Funding Deployed</p>
+          <p className="text-sm">{profile.fundingRequired}</p>
+        </div>
 
-        {profile.taxRelief && profile.taxRelief.length > 0 && (
+        {/* {profile.taxRelief && profile.taxRelief.length > 0 && (
           <div>
             <p className="text-sm font-medium mb-1">Tax Relief</p>
             <div className="flex flex-wrap gap-1">
@@ -106,7 +102,7 @@ export function FounderProfileCard({ profile, onEdit, onDelete }: ProfileCardPro
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {profile.customerGroups && profile.customerGroups.length > 0 && (
           <div>
@@ -121,10 +117,10 @@ export function FounderProfileCard({ profile, onEdit, onDelete }: ProfileCardPro
           </div>
         )}
 
-        {profile.productStage && (
+        {profile.currentFundingStage && (
           <div>
-            <p className="text-sm font-medium mb-1">Product Stage</p>
-            <p className="text-sm">{profile.productStage}</p>
+            <p className="text-sm font-medium mb-1">Current Funding Stage</p>
+            <p className="text-sm">{profile.currentFundingStage}</p>
           </div>
         )}
 
@@ -141,7 +137,7 @@ export function FounderProfileCard({ profile, onEdit, onDelete }: ProfileCardPro
           </div>
         )}
 
-        {profile.groups && profile.groups.length > 0 && (
+        {profile.groups && (
           <div>
             <p className="text-sm font-medium mb-1">Groups</p>
             <div className="flex flex-wrap gap-1">

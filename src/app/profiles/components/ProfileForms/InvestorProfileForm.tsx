@@ -26,27 +26,27 @@ import {
   InvestorTypeList,
   InvestmentStageList,
   PreferredLocationList,
-  GroupsToConnect,
+  InvestorGroup,
   InvestorJobTitleList
 } from '@/app/profiles/constants/profile-data'
-import { ProfileFormValues, profileSchema } from '@/app/profiles/schemas/profile-schema'
+import { InvestorFormValues, investorSchema } from '@/app/profiles/schemas/investor-schema'
 
 interface InvestorProfileFormProps {
-  defaultValues?: Partial<ProfileFormValues>
-  onSubmit: (values: ProfileFormValues) => void
+  defaultValues?: Partial<InvestorFormValues>
+  onSubmit: (values: InvestorFormValues) => void
   onCancel: () => void
   isEditing?: boolean
 }
 
 export function InvestorProfileForm({ defaultValues, onSubmit, onCancel, isEditing }: InvestorProfileFormProps) {
-  const form = useForm<ProfileFormValues>({
-    resolver: zodResolver(profileSchema),
+  const form = useForm<InvestorFormValues>({
+    resolver: zodResolver(investorSchema),
     defaultValues: {
       firstName: defaultValues?.firstName || '',
       lastName: defaultValues?.lastName || '',
       type: defaultValues?.type || '',
       industry: defaultValues?.industry || [],
-      fundingStage: defaultValues?.fundingStage || '',
+      fundingStage: defaultValues?.fundingStage || [],
       groups: defaultValues?.groups || [],
       preferredLocation: defaultValues?.preferredLocation || [],
       jobTitle: defaultValues?.jobTitle || '',
@@ -58,7 +58,7 @@ export function InvestorProfileForm({ defaultValues, onSubmit, onCancel, isEditi
   })
 
   const industryOptions = IndustriesList.map((item) => ({ label: item, value: item }))
-  const groupsOptions = GroupsToConnect.map((item) => ({ label: item, value: item }))
+  const groupsOptions = InvestorGroup.map((item) => ({ label: item, value: item }))
   const locationOptions = PreferredLocationList.map((item) => ({ label: item, value: item }))
 
   return (
@@ -122,22 +122,17 @@ export function InvestorProfileForm({ defaultValues, onSubmit, onCancel, isEditi
             control={form.control}
             name="fundingStage"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col">
                 <FormLabel>Funding Stage</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select funding stage" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {InvestmentStageList.map((stage) => (
-                      <SelectItem key={stage} value={stage}>
-                        {stage}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <MultiSelect
+                    options={InvestmentStageList.map((item) => ({ label: item, value: item }))}
+                    placeholder="Select funding stages"
+                    defaultValue={Array.isArray(field.value) ? field.value : []}
+                    onValueChange={(selected: string[]) => field.onChange(selected)}
+                    variant="default"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

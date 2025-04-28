@@ -11,11 +11,11 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Trash, Pencil } from 'lucide-react'
-import { Profile } from '@/app/profiles/schemas/profile-schema'
+import { InvestorProfile } from '@/app/profiles/schemas/investor-schema'
 
 interface ProfileCardProps {
-  profile: Profile
-  onEdit: (profile: Profile) => void
+  profile: InvestorProfile
+  onEdit: (profile: InvestorProfile) => void
   onDelete: (profileId: string) => void
 }
 

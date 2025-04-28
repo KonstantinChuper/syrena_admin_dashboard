@@ -106,6 +106,17 @@ export const InvestorJobTitleList = [
   'Managing Partner'
 ]
 
+export const InvestorGroup = [
+  'Female Founders',
+  'BIPOC Founders',
+  'LGBTQ+ Founders',
+  'Impact-Driven Ventures',
+  'First-Time Founders',
+  'Second-Time+ Founders',
+  'Underrepresented Backgrounds',
+  'No Preference'
+]
+
 //FOUNDERS
 
 export const FounderTypeList = [
@@ -122,7 +133,7 @@ export const FounderTypeList = [
 export const FounderStageList = ['None', 'Pre-Seed', 'Seed', 'Series A', 'Series B']
 
 //multiselect
-export const FounderChequeSizeOptions = [
+export const ChequesAcceptedList = [
   '£1k – £20k',
   '£20k – £50k',
   '£50k – £200k',
@@ -133,7 +144,7 @@ export const FounderChequeSizeOptions = [
 
 export const FounderRevenueOptions = ['Pre-revenue', '£0–50k', '£50k–200k', '£200k–500k', '£500k+']
 
-export const FounderEbitdaOptions = [
+export const ProfitabilityList = [
   'Profitable',
   'Breakeven',
   'Burning <10%',
@@ -149,7 +160,7 @@ export const FounderCloseRound = [
   '12+ months',
 ]
 
-export const FundraisingStage = [
+export const CurrentFundingStage = [
   'Launching in the next 6 to 12 months',
   'Launching in the next 6 months',
   'Launching imminently',
@@ -166,3 +177,5 @@ export const TaxReliefOptions = [
   'Not sure yet — need help with this',
   'Not eligible'
 ]
+
+export const YoYGrowthList = ['N/A', '10%', '30%', '50%', '75%', '100%', '150%', '200%', '300%']
