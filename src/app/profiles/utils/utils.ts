@@ -23,7 +23,6 @@ export function formatForFounderForm(profile: Profile | null): Partial<FounderFo
   if (!profile) {
     return {}
   }
-
   return {
     ...profile,
     fundingStage:
@@ -42,7 +41,6 @@ export function formatForFounderForm(profile: Profile | null): Partial<FounderFo
 
 export function processFormSubmission(values: any, profileType: string): any {
   const result = { ...values }
-
   if (profileType === 'investor') {
     result.fundingStage = Array.isArray(values.fundingStage)
       ? values.fundingStage
@@ -50,8 +48,6 @@ export function processFormSubmission(values: any, profileType: string): any {
       ? [values.fundingStage]
       : []
   }
-
-
   if (profileType === 'founder') {
     result.fundingStage = Array.isArray(values.fundingStage)
       ? values.fundingStage.length > 0
@@ -59,6 +55,20 @@ export function processFormSubmission(values: any, profileType: string): any {
         : ''
       : values.fundingStage || ''
   }
-
   return result
+}
+
+export const getDisplayName = (type: string) => {
+  switch (type) {
+    case 'investors':
+      return 'Investor'
+    case 'founders':
+      return 'Founder'
+    case 'advisors':
+      return 'Advisor'
+    case 'service-providers':
+      return 'Service Provider'
+    default:
+      return type.slice(0, 1).toUpperCase() + type.slice(1)
+  }
 }

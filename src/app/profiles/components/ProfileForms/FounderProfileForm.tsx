@@ -8,7 +8,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -21,24 +20,26 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
-import { MultiSelect } from '../Multiselect'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { MultiSelect } from '../ui/Multiselect'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { Switch } from '@/components/ui/switch'
+import { User } from 'lucide-react'
 import {
   IndustriesList,
   FounderTypeList,
   FounderStageList,
   PreferredLocationList,
-  GroupsToConnect,
   FounderRevenueOptions,
   ProfitabilityList,
   FounderCloseRound,
   CurrentFundingStage,
-  TaxReliefOptions,
   CustomerGroupsList,
-  ProductStageList,
   ChequesAcceptedList,
   InvestorGroup
 } from '@/app/profiles/constants/profile-data'
 import { FounderFormValues, founderSchema } from '@/app/profiles/schemas/founder-schema'
+import { IntroTable } from './IntroTable'
 
 interface FounderProfileFormProps {
   defaultValues?: FounderFormValues
@@ -58,8 +59,9 @@ export function FounderProfileForm({
     isCustomType || defaultValues?.jobTitle === 'Other (please specify)'
   )
   const [customType, setCustomType] = useState(isCustomType ? defaultValues?.jobTitle || '' : '')
+  
   const form = useForm<FounderFormValues>({
-    resolver: zodResolver(founderSchema),
+    resolver: zodResolver(founderSchema) as any,
     defaultValues: {
       firstName: defaultValues?.firstName || '',
       lastName: defaultValues?.lastName || '',
@@ -80,19 +82,20 @@ export function FounderProfileForm({
       yoyg: defaultValues?.yoyg || '',
       profitability: defaultValues?.profitability || '',
       bio: defaultValues?.bio || '',
-      imageUrl: defaultValues?.imageUrl || 'IMAGE-HERE',
-      pitchDeckUrl: defaultValues?.pitchDeckUrl || 'PITCH-DECK-HERE',
+      imageUrl: defaultValues?.imageUrl || '',
+      pitchDeckUrl: defaultValues?.pitchDeckUrl || '',
       closeDate: defaultValues?.closeDate || '',
-      customerGroups: defaultValues?.customerGroups || []
-      // taxRelief: defaultValues?.taxRelief || [],
-      // productStage: defaultValues?.productStage || ''
+      customerGroups: defaultValues?.customerGroups || [],
+      isVisible: defaultValues?.isVisible ?? true,
+      creditsUsed: defaultValues?.creditsUsed || 0,
+      introsMade: defaultValues?.introsMade || [],
+      introsReceived: defaultValues?.introsReceived || []
     }
   })
 
   const industryOptions = IndustriesList.map((item) => ({ label: item, value: item }))
   const customerGroupsOptions = CustomerGroupsList.map((item) => ({ label: item, value: item }))
   const locationOptions = PreferredLocationList.map((item) => ({ label: item, value: item }))
-  // const taxReliefOptions = TaxReliefOptions.map((item) => ({ label: item, value: item }))
   const chequesAcceptedOptions = ChequesAcceptedList.map((item) => ({ label: item, value: item }))
   const InvestorGroupOptions = InvestorGroup.map((item) => ({ label: item, value: item }))
 
@@ -106,594 +109,691 @@ export function FounderProfileForm({
   }, [form.watch])
 
   const handleSubmit = (values: FounderFormValues) => {
-    console.log('FounderForm handleSubmit called with data:', values)
-    console.log('Form validation state:', form.formState)
     if (values.jobTitle === 'Other (please specify)' && customType) {
       values.jobTitle = customType
     }
     onSubmit(values)
   }
 
-  const { errors } = form.formState
-  console.log('Form errors:', errors)
+  const fullName = `${form.watch('firstName') || 'New'} ${form.watch('lastName') || 'Founder'}`
+  const companyName = form.watch('companyName') || 'No company'
+
+  const introsMade = defaultValues?.introsMade || [];
+  const introsReceived = defaultValues?.introsReceived || [];
+  const creditHistory = [
+    { date: '2025-01-15', amount: 10, reason: 'Profile creation' },
+    { date: '2025-02-20', amount: 5, reason: 'Intro to investor' },
+    { date: '2025-04-05', amount: 15, reason: 'Monthly subscription' }
+  ];
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="space-y-6 overflow-y-auto scrollbar-hide"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="imageUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Image URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="IMAGE URL" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+        <div className="flex items-start justify-between bg-muted/20 rounded-lg p-6">
+          <div className="flex gap-5">
+            <Avatar className="h-20 w-20">
+              {defaultValues?.imageUrl ? (
+                <AvatarImage src={defaultValues.imageUrl} alt={fullName} />
+              ) : (
+                <AvatarFallback className="bg-primary/10">
+                  <User className="h-10 w-10 text-primary" />
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <div>
+              <h2 className="text-2xl font-semibold">{fullName}</h2>
+              <p className="text-muted-foreground">{companyName}</p>
+            </div>
+          </div>
 
-          <FormField
-            control={form.control}
-            name="pitchDeckUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Pitchdeck</FormLabel>
-                <FormControl>
-                  <Input placeholder="PITCHDECK" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="firstName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter first name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter last name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="companyName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Company Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter company name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="websiteUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Website URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://yourcompany.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="fundingRaised"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Funding Raised</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter amount raised" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="fundingRequired"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Funding Required</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter amount required" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="jobTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Job Title</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    setShowCustomType(value === 'Other (please specify)')
-                    if (value !== 'Other (please specify)') {
-                      setCustomType('')
-                    }
-                  }}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
+          <div className="flex items-center gap-3">
+            <span className="text-sm">Profile visibility</span>
+            <FormField
+              control={form.control}
+              name="isVisible"
+              render={({ field }) => (
+                <FormItem>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
-                  <SelectContent>
-                    {FounderTypeList.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          {showCustomType && (
-            <FormItem>
-              <FormLabel>Specify Your Role</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter your specific role"
-                  value={customType}
-                  onChange={(e) => setCustomType(e.target.value)}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-
-          <FormField
-            control={form.control}
-            name="fundingStage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Funding Stage</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select funding stage" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {FounderStageList.map((stage) => (
-                      <SelectItem key={stage} value={stage}>
-                        {stage}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="industry"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Industry</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    options={industryOptions as { label: string; value: string }[]}
-                    placeholder="Select industries"
-                    defaultValue={field.value}
-                    onValueChange={(selected: string[]) => field.onChange(selected)}
-                    variant="default"
-                    maxCount={1}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="groups"
-            render={({ field }) => {
-              console.log('Field value for groups:', field.value)
-              return (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Groups to connect</FormLabel>
-                  <FormControl>
-                    <MultiSelect
-                      options={InvestorGroupOptions}
-                      placeholder="Select groups to connect"
-                      defaultValue={field.value}
-                      onValueChange={(selected: string[]) => {
-                        console.log('Selected groups:', selected)
-                        field.onChange(selected)
-                      }}
-                      variant="default"
-                    />
-                  </FormControl>
-                  <FormMessage />
                 </FormItem>
-              )
-            }}
-          />
-
-          <FormField
-            control={form.control}
-            name="preferredLocation"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Preferred Location</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    options={locationOptions as { label: string; value: string }[]}
-                    placeholder="Select locations"
-                    defaultValue={field.value}
-                    onValueChange={(selected: string[]) => field.onChange(selected)}
-                    variant="default"
-                    maxCount={3}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="revenue"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Revenue</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select revenue range" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {FounderRevenueOptions.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="profitability"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Profitability Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select profitability status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {ProfitabilityList.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="closeDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Closing Date</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select closing timeframe" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {FounderCloseRound.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* <FormField
-            control={form.control}
-            name="currentFundingStage"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Current Funding Stage</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    options={CurrentFundingStage.map((item) => ({ label: item, value: item }))}
-                    placeholder="Select funding stages"
-                    defaultValue={Array.isArray(field.value) ? field.value : []}
-                    onValueChange={(selected: string[]) => field.onChange(selected)}
-                    variant="default"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-
-          <FormField
-            control={form.control}
-            name="currentFundingStage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Current Funding Stage</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select current funding stage" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {CurrentFundingStage.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* <FormField
-            control={form.control}
-            name="taxRelief"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Tax Relief</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    options={taxReliefOptions as { label: string; value: string }[]}
-                    placeholder="Select tax relief options"
-                    defaultValue={field.value}
-                    onValueChange={(selected: string[]) => field.onChange(selected)}
-                    variant="default"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-
-          <FormField
-            control={form.control}
-            name="customerGroups"
-            render={({ field }) => {
-              console.log('Field value for customerGroups:', field.value)
-              console.log('customerGroupsOptions:', customerGroupsOptions)
-
-              return (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Customer Groups</FormLabel>
-                  <FormControl>
-                    <MultiSelect
-                      options={customerGroupsOptions}
-                      placeholder="Select customer groups"
-                      defaultValue={field.value}
-                      onValueChange={(selected: string[]) => {
-                        console.log('Selected customer groups:', selected)
-                        field.onChange(selected)
-                      }}
-                      variant="default"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
-          />
-
-          {/* <FormField
-            control={form.control}
-            name="productStage"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product Stage</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select product stage" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {ProductStageList.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-
-          <FormField
-            control={form.control}
-            name="chequesAccepted"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Cheques Accepted</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    options={chequesAcceptedOptions}
-                    placeholder="Select acceptable cheque sizes"
-                    defaultValue={field.value}
-                    onValueChange={(selected: string[]) => field.onChange(selected)}
-                    variant="default"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="yoyg"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Year-over-Year Growth</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select YoY Growth" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {['0%', '1-25%', '26-50%', '51-75%', '76-99%', '100%+'].map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="mobileNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mobile Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="+44 123 456 7890" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="linkedinUrl"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>LinkedIn URL</FormLabel>
-                <FormControl>
-                  <Input placeholder="https://linkedin.com/username" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              )}
+            />
+          </div>
         </div>
 
-        <FormField
-          control={form.control}
-          name="bio"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Tell us about this person..."
-                  className="resize-none min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <Tabs defaultValue="basic-details" className="w-full">
+          <TabsList className="mb-8 border-b border-input w-full">
+            <TabsTrigger value="basic-details">Basic Details</TabsTrigger>
+            <TabsTrigger value="intros">Intros</TabsTrigger>
+            <TabsTrigger value="credit-usage">Credit Usage</TabsTrigger>
+          </TabsList>
 
-        <div className="flex justify-end gap-4">
+          <TabsContent value="basic-details" className="space-y-6">
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Last Name</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="Last Name"
+                          {...field}
+                          className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Company Name</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="companyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="Company Name"
+                          {...field}
+                          className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Website URL</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="websiteUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="https://yourcompany.com"
+                          {...field}
+                          className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Pitch Deck URL */}
+            {/* <div className="flex items-center">
+            <div className="w-1/4 text-sm text-muted-foreground">Pitch Deck URL</div>
+            <div className="w-3/4">
+              <FormField
+                control={form.control}
+                name="pitchDeckUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        placeholder="URL to pitch deck"
+                        {...field}
+                        className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div> */}
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Job Title</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="jobTitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={(value) => {
+                          field.onChange(value)
+                          setShowCustomType(value === 'Other (please specify)')
+                          if (value !== 'Other (please specify)') {
+                            setCustomType('')
+                          }
+                        }}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-0 border-b border-muted focus:ring-0 rounded-none px-0 bg-transparent">
+                            <SelectValue placeholder="Select job title" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {FounderTypeList.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {showCustomType && (
+              <div className="flex items-center">
+                <div className="w-1/4 text-sm text-muted-foreground">Specify Role</div>
+                <div className="w-3/4">
+                  <Input
+                    placeholder="Enter your specific role"
+                    value={customType}
+                    onChange={(e) => setCustomType(e.target.value)}
+                    className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Phone</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="mobileNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="+44 123 456 7890"
+                          {...field}
+                          className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">LinkedIn URL</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="linkedinUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="https://linkedin.com/username"
+                          {...field}
+                          className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Funding Raised</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="fundingRaised"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter amount raised"
+                          {...field}
+                          className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Funding Required</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="fundingRequired"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter amount required"
+                          {...field}
+                          className="border-0 border-b border-muted focus-visible:ring-0 rounded-none px-0 bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Funding Stage</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="fundingStage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-0 border-b border-muted focus:ring-0 rounded-none px-0 bg-transparent">
+                            <SelectValue placeholder="Select funding stage" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {FounderStageList.map((stage) => (
+                            <SelectItem key={stage} value={stage}>
+                              {stage}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Current Funding Stage</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="currentFundingStage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-0 border-b border-muted focus:ring-0 rounded-none px-0 bg-transparent">
+                            <SelectValue placeholder="Select current funding stage" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {CurrentFundingStage.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Revenue</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="revenue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-0 border-b border-muted focus:ring-0 rounded-none px-0 bg-transparent">
+                            <SelectValue placeholder="Select revenue range" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {FounderRevenueOptions.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Profitability</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="profitability"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-0 border-b border-muted focus:ring-0 rounded-none px-0 bg-transparent">
+                            <SelectValue placeholder="Select profitability status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {ProfitabilityList.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Closing Date</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="closeDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-0 border-b border-muted focus:ring-0 rounded-none px-0 bg-transparent">
+                            <SelectValue placeholder="Select closing timeframe" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {FounderCloseRound.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Year-over-Year Growth</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="yoyg"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="border-0 border-b border-muted focus:ring-0 rounded-none px-0 bg-transparent">
+                            <SelectValue placeholder="Select YoY Growth" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {['0%', '1-25%', '26-50%', '51-75%', '76-99%', '100%+'].map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Industry</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="industry"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <MultiSelect
+                          options={industryOptions as { label: string; value: string }[]}
+                          placeholder="Select industries"
+                          defaultValue={field.value}
+                          onValueChange={(selected: string[]) => field.onChange(selected)}
+                          variant="default"
+                          className="border-0 border-b border-muted rounded-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Groups to connect</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="groups"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <MultiSelect
+                          options={InvestorGroupOptions}
+                          placeholder="Select groups to connect"
+                          defaultValue={field.value}
+                          onValueChange={(selected: string[]) => field.onChange(selected)}
+                          variant="default"
+                          className="border-0 border-b border-muted rounded-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Preferred Location</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="preferredLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <MultiSelect
+                          options={locationOptions as { label: string; value: string }[]}
+                          placeholder="Select locations"
+                          defaultValue={field.value}
+                          onValueChange={(selected: string[]) => field.onChange(selected)}
+                          variant="default"
+                          maxCount={3}
+                          className="border-0 border-b border-muted rounded-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Customer Groups</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="customerGroups"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <MultiSelect
+                          options={customerGroupsOptions}
+                          placeholder="Select customer groups"
+                          defaultValue={field.value}
+                          onValueChange={(selected: string[]) => field.onChange(selected)}
+                          variant="default"
+                          className="border-0 border-b border-muted rounded-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-1/4 text-sm text-muted-foreground">Cheques Accepted</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="chequesAccepted"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <MultiSelect
+                          options={chequesAcceptedOptions}
+                          placeholder="Select acceptable cheque sizes"
+                          defaultValue={field.value}
+                          onValueChange={(selected: string[]) => field.onChange(selected)}
+                          variant="default"
+                          className="border-0 border-b border-muted rounded-none"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-start">
+              <div className="w-1/4 text-sm text-muted-foreground pt-2">Bio</div>
+              <div className="w-3/4">
+                <FormField
+                  control={form.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Bio"
+                          className="resize-none min-h-[100px] border-0 border-b border-muted focus-visible:ring-0 rounded-none bg-transparent"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="intros">
+            <IntroTable introsMade={introsMade} introsReceived={introsReceived} />
+          </TabsContent>
+
+          <TabsContent value="credit-usage">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Credit Usage History</h3>
+                <div className="bg-primary/10 px-4 py-2 rounded-md">
+                  <span className="text-sm font-medium">Current Balance: </span>
+                  <span className="text-lg font-bold">
+                    {form.watch('creditsUsed') || 0} credits
+                  </span>
+                </div>
+              </div>
+
+              <div className="border rounded-md overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-muted/20">
+                    <tr>
+                      <th className="text-left p-4">Date</th>
+                      <th className="text-left p-4">Amount</th>
+                      <th className="text-left p-4">Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {creditHistory.map((item, index) => (
+                      <tr
+                        key={index}
+                        className={index % 2 === 0 ? 'bg-transparent' : 'bg-muted/10'}
+                      >
+                        <td className="p-4">{new Date(item.date).toLocaleDateString()}</td>
+                        <td className="p-4">{item.amount} credits</td>
+                        <td className="p-4">{item.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        <div className="flex justify-end gap-4 pt-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit" className="bg-[#FF5F00]">
+          <Button type="submit" className="bg-primary">
             {isEditing ? 'Save Profile' : 'Add Profile'}
           </Button>
         </div>

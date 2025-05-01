@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Plus, Search, SlidersHorizontal, FileDown } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,14 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import { ProfileCard } from '@/app/profiles/components/ProfileCards/InvestorProfileCard'
 import { InvestorProfileForm } from '@/app/profiles/components/ProfileForms/InvestorProfileForm'
 import { FounderProfileForm } from './components/ProfileForms/FounderProfileForm'
-import { FounderProfileCard } from '@/app/profiles/components/ProfileCards/FounderProfileCard'
 import { v4 as uuidv4 } from 'uuid'
 import { FounderProfile, FounderFormValues } from '@/app/profiles/schemas/founder-schema'
 import { InvestorProfile, InvestorFormValues } from '@/app/profiles/schemas/investor-schema'
-
+import { ProfileTable } from './components/ProfileTable'
 import { formatForInvestorForm, formatForFounderForm, processFormSubmission } from './utils/utils'
 
 type Profile = FounderProfile | InvestorProfile
@@ -35,6 +34,7 @@ export default function ProfilesPage() {
   const [currentProfileType, setCurrentProfileType] = useState<string>('')
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState('investors')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const [investorProfiles, setInvestorProfiles] = useState<InvestorProfile[]>([
     {
@@ -50,7 +50,34 @@ export default function ProfilesPage() {
       mobileNumber: '+44 7123 456789',
       linkedinUrl: 'https://uk.linkedin.com/in/janesmith',
       fundingDeployed: '$2M-$5M',
-      bio: 'Angel investor with focus on AI and fintech startups. Previously founded two successful tech companies.'
+      bio: 'Angel investor with focus on AI and fintech startups. Previously founded two successful tech companies.',
+      email: 'jane.smith@investor.com',
+      dateJoined: '15 Jan, 2023',
+      creditsUsed: 42,
+      isVisible: true,
+      imageUrl: 'https://randomuser.me/api/portraits/women/12.jpg',
+      introsMade: [
+        {
+          timestamp: '2025-03-15 10:30',
+          sentTo: 'David Chen',
+          status: 'Accepted',
+          lastUpdate: '2025-03-16 14:25'
+        },
+        {
+          timestamp: '2025-04-02 15:45',
+          sentTo: 'Sarah Williams',
+          status: 'Pending',
+          lastUpdate: '2025-04-02 15:45'
+        }
+      ],
+      introsReceived: [
+        {
+          timestamp: '2025-02-20 09:15',
+          sentTo: 'Michael Johnson',
+          status: 'Accepted',
+          lastUpdate: '2025-02-21 11:30'
+        }
+      ]
     },
     {
       id: '2',
@@ -65,7 +92,34 @@ export default function ProfilesPage() {
       mobileNumber: '+44 7987 654321',
       linkedinUrl: 'https://uk.linkedin.com/in/michaeljohnson',
       fundingDeployed: '$10M-$50M',
-      bio: 'Experienced VC focusing on B2B SaaS and cybersecurity. 15+ years of investment experience.'
+      bio: 'Experienced VC focusing on B2B SaaS and cybersecurity. 15+ years of investment experience.',
+      email: 'michael.johnson@venturecapital.com',
+      dateJoined: '03 Mar, 2023',
+      creditsUsed: 28,
+      isVisible: true,
+      imageUrl: 'https://randomuser.me/api/portraits/men/22.jpg',
+      introsMade: [
+        {
+          timestamp: '2025-04-10 13:00',
+          sentTo: 'Alex Rodriguez',
+          status: 'Rejected',
+          lastUpdate: '2025-04-11 16:05'
+        }
+      ],
+      introsReceived: [
+        {
+          timestamp: '2025-03-25 14:30',
+          sentTo: 'Jane Smith',
+          status: 'Accepted',
+          lastUpdate: '2025-03-25 18:10'
+        },
+        {
+          timestamp: '2025-04-15 11:20',
+          sentTo: 'Robert Chen',
+          status: 'Pending',
+          lastUpdate: '2025-04-15 11:20'
+        }
+      ]
     }
   ])
 
@@ -83,17 +137,44 @@ export default function ProfilesPage() {
       linkedinUrl: 'https://uk.linkedin.com/in/sarahwilliams',
       fundingRequired: 'fdfdffd',
       bio: 'Founder of a health tech startup focused on preventative care using AI.',
-      revenue: '£20k – £50k',
+      revenue: '£0k – 50k',
       closeDate: '3-6 months',
       // taxRelief: ['SEIS (Seed Enterprise Investment Scheme)', 'EIS (Enterprise Investment Scheme)'],
       customerGroups: ['B2B', 'B2C'],
       // productStage: 'MVP',
       companyName: 'HealthAI Ltd',
-      chequesAccepted: ['£50k-£100k', '£100k-£200k'],
+      chequesAccepted: ['£50k-200k', '£100k-£200k'],
       currentFundingStage: 'Just started (spoke to leess than 5 funds)',
       yoyg: '100%+',
       profitability: 'Not yet profitable',
-      websiteUrl: 'https://healthai.co.uk'
+      websiteUrl: 'https://healthai.co.uk',
+      email: 'sarah@healthai.co.uk',
+      dateJoined: '22 Feb, 2023',
+      creditsUsed: 35,
+      isVisible: true,
+      imageUrl: 'https://randomuser.me/api/portraits/women/33.jpg',
+      introsMade: [
+        {
+          timestamp: '2025-03-20 09:45',
+          sentTo: 'Jane Smith',
+          status: 'Pending',
+          lastUpdate: '2025-03-20 09:45'
+        }
+      ],
+      introsReceived: [
+        {
+          timestamp: '2025-02-15 16:30',
+          sentTo: 'Jane Smith',
+          status: 'Accepted',
+          lastUpdate: '2025-02-16 10:20'
+        },
+        {
+          timestamp: '2025-03-05 11:15',
+          sentTo: 'Michael Johnson',
+          status: 'Rejected',
+          lastUpdate: '2025-03-07 09:30'
+        }
+      ]
     },
     {
       id: '4',
@@ -114,13 +195,39 @@ export default function ProfilesPage() {
       // taxRelief: ['EIS (Enterprise Investment Scheme)'],
       customerGroups: ['B2B', 'B2C'],
       // productStage: 'Scaling',
-      // Добавленные отсутствующие поля
       companyName: 'FinScaler Technologies',
       chequesAccepted: ['£20k – £50k'],
       currentFundingStage: 'Just started (spoke to leess than 5 funds)',
       yoyg: '75%',
       profitability: 'Profitable',
-      websiteUrl: 'https://finscaler.com'
+      websiteUrl: 'https://finscaler.com',
+      email: 'david.chen@finscaler.com',
+      dateJoined: '10 Apr, 2023',
+      creditsUsed: 47,
+      isVisible: true,
+      imageUrl: 'https://randomuser.me/api/portraits/men/44.jpg',
+      introsMade: [
+        {
+          timestamp: '2025-02-28 14:15',
+          sentTo: 'Michael Johnson',
+          status: 'Accepted',
+          lastUpdate: '2025-03-01 10:45'
+        },
+        {
+          timestamp: '2025-04-05 16:30',
+          sentTo: 'Emily Zhang',
+          status: 'Pending',
+          lastUpdate: '2025-04-05 16:30'
+        }
+      ],
+      introsReceived: [
+        {
+          timestamp: '2025-03-12 09:30',
+          sentTo: 'Jane Smith',
+          status: 'Accepted',
+          lastUpdate: '2025-03-13 11:50'
+        }
+      ]
     }
   ])
 
@@ -249,84 +356,132 @@ export default function ProfilesPage() {
     }
   }
 
+  const handleToggleVisibility = (profileId: string, isVisible: boolean) => {
+    if (investorProfiles.some((p) => p.id === profileId)) {
+      setInvestorProfiles(
+        investorProfiles.map((profile) =>
+          profile.id === profileId ? { ...profile, isVisible } : profile
+        )
+      )
+    } else if (founderProfiles.some((p) => p.id === profileId)) {
+      setFounderProfiles(
+        founderProfiles.map((profile) =>
+          profile.id === profileId ? { ...profile, isVisible } : profile
+        )
+      )
+    }
+  }
+  
+  const filteredInvestorProfiles = investorProfiles.filter(
+    (profile) =>
+      searchQuery === '' ||
+      profile.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (profile.email && profile.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  )
+
+  const filteredFounderProfiles = founderProfiles.filter(
+    (profile) =>
+      searchQuery === '' ||
+      profile.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (profile.email && profile.email.toLowerCase().includes(searchQuery.toLowerCase()))
+  )
+
+  const getProfileCount = (activeTab: string) => {
+    switch (activeTab) {
+      case 'investors':
+        return filteredInvestorProfiles.length
+      case 'founders':
+        return filteredFounderProfiles.length
+      case 'advisors':
+        return 0
+      default:
+        return 0
+    }
+  }
+
+  
+
   return (
-    <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Profile Management</h1>
+        <h1 className="text-3xl font-bold">Syrena users</h1>
         <Button
           onClick={() => handleAddEditProfile(getProfileTypeFromTab(activeTab))}
-          className="flex items-center mt-6 bg-[#FF5F00]"
+          className="flex items-center bg-primary px-5 py-3.5 font-semibold"
         >
-          <Plus className="mr-2 h-4 w-4" />
-          Add New Profile
+          <Plus className="h-3 w-3" />
+          Add new user
         </Button>
       </div>
 
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-8 w-full">
+        <TabsList className="w-full mb-[-1.3px] ml-[1px]">
           <TabsTrigger value="investors">Investors</TabsTrigger>
           <TabsTrigger value="founders">Founders</TabsTrigger>
           <TabsTrigger value="advisors">Advisors</TabsTrigger>
-          <TabsTrigger value="service-providers">Service Providers</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="investors" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {investorProfiles.map((profile) => (
-              <ProfileCard
-                key={profile.id}
-                profile={profile as InvestorProfile}
-                onEdit={handleEditProfile}
-                onDelete={handleDeleteConfirm}
-              />
-            ))}
-            {investorProfiles.length === 0 && (
-              <div className="col-span-3 py-12 text-center">
-                <p className="text-muted-foreground">No investor profiles found.</p>
-              </div>
-            )}
+        <div className="flex justify-between items-center p-6 border border-muted rounded-tr-lg">
+          <div className="text-sm">
+            {getProfileCount(activeTab) > 0
+              ? searchQuery
+                ? `Found ${getProfileCount(activeTab)} ${activeTab.replace(/s$/, '')}${
+                    getProfileCount(activeTab) !== 1 ? 's' : ''
+                  } for "${searchQuery}"`
+                : `Showing 1-${getProfileCount(activeTab)} of ${getProfileCount(
+                    activeTab
+                  )} ${activeTab.replace(/s$/, '')}${getProfileCount(activeTab) !== 1 ? 's' : ''}`
+              : searchQuery
+              ? `No ${activeTab.replace(/s$/, '')}s found matching "${searchQuery}"`
+              : `No ${activeTab.replace(/s$/, '')}s available`}
           </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" className="flex items-center gap-2">
+              Apply filters <SlidersHorizontal className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" className="flex items-center gap-2 px-5 py-3">
+              Export <FileDown className="h-4 w-4" />
+            </Button>
+            <div className="relative">
+              <Input
+                type="search"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-[42px] w-[200px] lg:w-[300px] pl-9 bg-input border-none focus-visible:ring-1 focus-visible:ring-neutral-700 focus-visible:border-none focus-visible:outline-none placeholder:text-muted-foreground"
+              />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground text-[#afafaf]" />
+            </div>
+          </div>
+        </div>
+
+        <TabsContent value="investors">
+          <ProfileTable
+            profiles={filteredInvestorProfiles}
+            profileType="investors"
+            onEdit={handleEditProfile}
+            onToggleVisibility={handleToggleVisibility}
+          />
         </TabsContent>
 
-        <TabsContent value="founders" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {founderProfiles.map((profile) => (
-              <FounderProfileCard
-                key={profile.id}
-                profile={profile as FounderProfile}
-                onEdit={handleEditProfile}
-                onDelete={handleDeleteConfirm}
-              />
-            ))}
-            {founderProfiles.length === 0 && (
-              <div className="col-span-3 py-12 text-center">
-                <p className="text-muted-foreground">No founder profiles found.</p>
-              </div>
-            )}
-          </div>
+        <TabsContent value="founders">
+          <ProfileTable
+            profiles={filteredFounderProfiles}
+            profileType="founders"
+            onEdit={handleEditProfile}
+            onToggleVisibility={handleToggleVisibility}
+          />
         </TabsContent>
 
         <TabsContent value="advisors" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="col-span-3 py-12 text-center">
-              <p className="text-muted-foreground">No advisor profiles found.</p>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="service-providers" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="col-span-3 py-12 text-center">
-              <p className="text-muted-foreground">No service provider profiles found.</p>
-            </div>
-          </div>
+          <ProfileTable profiles={[]} profileType="advisors" onEdit={handleEditProfile} />
         </TabsContent>
       </Tabs>
 
       <Dialog open={formDialogOpen} onOpenChange={setFormDialogOpen}>
-        <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-y-auto scrollbar-hide">
+        <DialogContent className="sm:max-w-[850px] max-h-[90vh] overflow-y-auto px-10">
           <DialogHeader className="pb-2">
-            <DialogTitle className="text-[#FF5F00] text-xl">
+            <DialogTitle className="text-primary text-xl">
               {isEditing ? 'Edit Profile' : 'Add New Profile'}
             </DialogTitle>
           </DialogHeader>
@@ -371,7 +526,7 @@ export default function ProfilesPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteProfile}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-[#FF5F00]"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-primary"
             >
               Delete
             </AlertDialogAction>

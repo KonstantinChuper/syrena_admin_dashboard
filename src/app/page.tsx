@@ -6,7 +6,7 @@ import Link from 'next/link'
 export default function Home() {
   return (
     <div className="p-8 flex flex-col items-center justify-center min-h-screen">
-      <h1 className="text-4xl font-bold mb-8">Syrena Admin Dashboard</h1>
+      <h1 className="text-4xl font-bold mb-8 text-primary">Syrena Admin Dashboard</h1>
       <div className="flex gap-4">
         <Button asChild>
           <Link href="/profiles">Manage Profiles</Link>

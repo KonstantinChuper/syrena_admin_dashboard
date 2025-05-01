@@ -52,7 +52,7 @@ export const MultiSelect = ({
   defaultValue = [],
   placeholder = 'Select options',
   animation = 0,
-  maxCount = 1,
+  maxCount = 3,
   className
 }: MultiSelectProps) => {
   const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue)
@@ -74,14 +74,13 @@ export const MultiSelect = ({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            'border-input flex items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none h-auto min-h-9 text-left',
-            'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-            className
-          )}
-        >
+        <div 
+    className={cn(
+      'border-input flex items-center justify-between gap-2 rounded-md border bg-transparent px-0 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none min-h-9 text-left cursor-pointer',
+      'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+      className
+    )}
+  >
           <div className="flex-1 truncate">
             {selectedValues.length > 0 ? (
               <div className="flex flex-wrap items-center gap-1 max-h-20 overflow-y-auto scrollbar-hide">
@@ -102,11 +101,11 @@ export const MultiSelect = ({
                 )}
               </div>
             ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-foreground">{placeholder}</span>
             )}
           </div>
-          <ChevronDownIcon className="size-4 opacity-50 flex-shrink-0" />
-        </Button>
+          <ChevronDownIcon className="size-4 opacity-50 flex-shrink-0 text-foreground" />
+        </div>
       </PopoverTrigger>
       <PopoverContent
         className="w-[300px] p-0 bg-neutral-900 border rounded-md shadow-md"

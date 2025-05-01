@@ -1,5 +1,12 @@
 import * as z from 'zod'
 
+export const introSchema = z.object({
+  timestamp: z.string(),
+  sentTo: z.string(),
+  status: z.enum(['Pending', 'Accepted', 'Rejected']),
+  lastUpdate: z.string()
+})
+
 export const investorSchema = z.object({
   firstName: z.string().min(2, 'First name is required'),
   lastName: z.string().min(2, 'Last name is required'),
@@ -24,7 +31,14 @@ export const investorSchema = z.object({
       message: 'Bio must not be longer than 300 characters.'
     })
     .optional(),
-  imageUrl: z.string().optional()
+  imageUrl: z.string().optional(),
+  pitchDeckUrl: z.string().optional(),
+  email: z.string().email('Please enter a valid email').optional(),
+  dateJoined: z.string().optional(),
+  creditsUsed: z.number().optional(),
+  isVisible: z.boolean().default(true),
+  introsMade: z.array(introSchema).optional().default([]),
+  introsReceived: z.array(introSchema).optional().default([])
 })
 
 export type InvestorFormValues = z.infer<typeof investorSchema>
