@@ -6,6 +6,7 @@
   --background: #050505;
   --foreground: #fafafa;
   --foreground-transparent: #fafafaa4;
+  --forefround-subtitle: #a3a3a3;
   --primary: #ff5f00;
   --primary-dark: #662600;
   --muted: #ffffff1a;
@@ -20,6 +21,7 @@
   --color-primary-dark: var(--primary-dark);
   --color-muted: var(--muted);
   --color-input: var(--input);
+  --color-foreground-subtitle: var(--forefround-subtitle);
 }
 
 @layer base {

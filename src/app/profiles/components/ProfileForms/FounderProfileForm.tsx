@@ -3,13 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +15,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MultiSelect } from '../ui/Multiselect'
+import { MultiSelect } from '../../../../components/Multiselect'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Switch } from '@/components/ui/switch'
 import { User } from 'lucide-react'
@@ -59,7 +53,7 @@ export function FounderProfileForm({
     isCustomType || defaultValues?.jobTitle === 'Other (please specify)'
   )
   const [customType, setCustomType] = useState(isCustomType ? defaultValues?.jobTitle || '' : '')
-  
+
   const form = useForm<FounderFormValues>({
     resolver: zodResolver(founderSchema) as any,
     defaultValues: {
@@ -118,13 +112,13 @@ export function FounderProfileForm({
   const fullName = `${form.watch('firstName') || 'New'} ${form.watch('lastName') || 'Founder'}`
   const companyName = form.watch('companyName') || 'No company'
 
-  const introsMade = defaultValues?.introsMade || [];
-  const introsReceived = defaultValues?.introsReceived || [];
+  const introsMade = defaultValues?.introsMade || []
+  const introsReceived = defaultValues?.introsReceived || []
   const creditHistory = [
     { date: '2025-01-15', amount: 10, reason: 'Profile creation' },
     { date: '2025-02-20', amount: 5, reason: 'Intro to investor' },
     { date: '2025-04-05', amount: 15, reason: 'Monthly subscription' }
-  ];
+  ]
 
   return (
     <Form {...form}>

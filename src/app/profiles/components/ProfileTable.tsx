@@ -4,11 +4,11 @@ import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from 
 import { Gem } from 'lucide-react'
 import { FounderProfile } from '../schemas/founder-schema'
 import { InvestorProfile } from '../schemas/investor-schema'
-import { ProfileBadge } from '@/app/profiles/components/ui/ProfileBadge'
+import { ProfileBadge } from '@/components/ProfileBadge'
 import { getDisplayName } from '@/app/profiles/utils/utils'
 import { Switch } from '@/components/ui/switch'
 import { useState } from 'react'
-import { PaginationControl } from './ui/PaginationControl'
+import { PaginationControl } from '../../../components/PaginationControl'
 
 type Profile = FounderProfile | InvestorProfile
 

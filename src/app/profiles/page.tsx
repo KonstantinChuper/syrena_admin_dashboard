@@ -64,10 +64,10 @@ export default function ProfilesPage() {
           lastUpdate: '2025-03-16 14:25'
         },
         {
-          timestamp: '2025-04-02 15:45',
+          timestamp: '2025-05-01 12:45',
           sentTo: 'Sarah Williams',
           status: 'Pending',
-          lastUpdate: '2025-04-02 15:45'
+          lastUpdate: '2025-05-01 10:45'
         }
       ],
       introsReceived: [

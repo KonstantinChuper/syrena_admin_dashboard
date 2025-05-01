@@ -14,7 +14,7 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MultiSelect } from '../ui/Multiselect'
+import { MultiSelect } from '../../../../components/Multiselect'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Switch } from '@/components/ui/switch'
 import { User } from 'lucide-react'
